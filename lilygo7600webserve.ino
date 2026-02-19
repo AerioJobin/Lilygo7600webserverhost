@@ -24,8 +24,8 @@ SPIClass sdSPI(HSPI);
 Arducam_Mega myCAM(CAM_CS);
 WebServer server(80);
 
-const char* ssid = "Aerio4048";
-const char* password = "aerio12345678";
+const char* ssid = "AERIO4048";
+const char* password = "aerio12345678-";
 const char* AWS_API_URL = "https://3ifs2w7u2j.execute-api.ap-south-1.amazonaws.com/upload";
 
 // --- 1. THE WORKING FILE LOADER ---
