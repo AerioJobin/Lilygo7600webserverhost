@@ -6,7 +6,6 @@
 #include <FS.h>
 #include <HTTPClient.h>
 
-const char* AWS_API_URL
 const int CAM_CS = 5; 
 const int CAM_SCK = 18;
 const int CAM_MISO = 19;
