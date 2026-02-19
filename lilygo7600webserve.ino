@@ -68,6 +68,7 @@ bool uploadToAws(String filePath) {
   
   HTTPClient http;
   http.begin(AWS_API_URL);
+    http.setInsecure();  // Bypass SSL certificate validation
   http.addHeader("Content-Type", "image/jpeg");
   
   int httpCode = http.POST(buf, size);
