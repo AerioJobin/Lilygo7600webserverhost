@@ -29,7 +29,7 @@ const char* password = "aerio12345678";
 const char* AWS_API_URL = "https://kloy7fchmw4ii3dfjsd7joicga0fouov.lambda-url.ap-south-1.on.aws/";
 // --- 1. THE WORKING FILE LOADER ---
 bool loadFromSD(String path) {
-"https://kloy7fchmw4ii3dfjsd7joicga0fouov.lambda-url.ap-south-1.on.aws/"  File dataFile = SD.open(path, "r");
+  File dataFile = SD.open(path, "r");
   if (!dataFile && path.startsWith("/")) dataFile = SD.open(path.substring(1), "r");
   if (!dataFile && !path.startsWith("/")) dataFile = SD.open("/" + path, "r");
 
