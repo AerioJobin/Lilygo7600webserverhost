@@ -180,7 +180,20 @@ void setup() {
     Serial.println("Camera: FAIL");
   }
 
-  WiFi.softAP(ssid, password);
+  // Connect to WiFi (Station Mode)
+  Serial.println("\nConnecting to WiFi...");
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  Serial.println("\n--- WiFi Connected! ---");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("\nAccess the camera at: http://");
+  Serial.println(WiFi.localIP());
   
   server.on("/", handleRoot);
   server.on("/capture", handleCapture);
