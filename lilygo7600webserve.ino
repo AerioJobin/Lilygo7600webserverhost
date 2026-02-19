@@ -6,7 +6,7 @@
 #include <FS.h>
 #include <HTTPClient.h>
 
-// -------- PIN CONFIGURATION (Your Working Pins) --------
+const char* AWS_API_URL
 const int CAM_CS = 5; 
 const int CAM_SCK = 18;
 const int CAM_MISO = 19;
@@ -26,12 +26,10 @@ WebServer server(80);
 
 const char* ssid = "AERIO4048";
 const char* password = "aerio12345678";
-const char* AWS_API_URL = "https://3ifs2w7u2j.execute-api.ap-south-1.amazonaws.com/upload";
-
+const char* AWS_API_URL = "https://kloy7fchmw4ii3dfjsd7joicga0fouov.lambda-url.ap-south-1.on.aws/";
 // --- 1. THE WORKING FILE LOADER ---
 bool loadFromSD(String path) {
-  // Try opening with/without leading slash
-  File dataFile = SD.open(path, "r");
+"https://kloy7fchmw4ii3dfjsd7joicga0fouov.lambda-url.ap-south-1.on.aws/"  File dataFile = SD.open(path, "r");
   if (!dataFile && path.startsWith("/")) dataFile = SD.open(path.substring(1), "r");
   if (!dataFile && !path.startsWith("/")) dataFile = SD.open("/" + path, "r");
 
