@@ -5,6 +5,7 @@
 #include <SD.h>
 #include <FS.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 
 const int CAM_CS = 5; 
 const int CAM_SCK = 18;
@@ -67,8 +68,9 @@ bool uploadToAws(String filePath) {
   f.close();
   
   HTTPClient http;
-  http.begin(AWS_API_URL);
-    http.setInsecure();  // Bypass SSL certificate validation
+    WiFiClientSecure *client = new WiFiClientSecure;
+  client->setInsecure();  // Skip certificate validation
+  http.begin(*client, AWS_API_URL);
   http.addHeader("Content-Type", "image/jpeg");
   
   int httpCode = http.POST(buf, size);
