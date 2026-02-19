@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <FS.h>
+#include <HTTPClient.h>
 
 // -------- PIN CONFIGURATION (Your Working Pins) --------
 const int CAM_CS = 5; 
@@ -25,6 +26,7 @@ WebServer server(80);
 
 const char* ssid = "Aerio4048";
 const char* password = "aerio12345678";
+const char* AWS_API_URL = "https://3ifs2w7u2j.execute-api.ap-south-1.amazonaws.com/upload";
 
 // --- 1. THE WORKING FILE LOADER ---
 bool loadFromSD(String path) {
@@ -42,6 +44,47 @@ bool loadFromSD(String path) {
 }
 
 // --- 2. YOUR ORIGINAL WORKING CAPTURE LOGIC ---
+
+// --- AWS UPLOAD FUNCTION ---
+bool uploadToAws(String filePath) {
+  File f = SD.open(filePath, FILE_READ);
+  if (!f) {
+    Serial.println("Failed to open file for AWS upload");
+    return false;
+  }
+  
+  size_t size = f.size();
+  if (size == 0) {
+    f.close();
+    return false;
+  }
+  
+  uint8_t *buf = (uint8_t*)malloc(size);
+  if (!buf) {
+    Serial.println("No RAM for buffer");
+    f.close();
+    return false;
+  }
+  
+  f.read(buf, size);
+  f.close();
+  
+  HTTPClient http;
+  http.begin(AWS_API_URL);
+  http.addHeader("Content-Type", "image/jpeg");
+  
+  int httpCode = http.POST(buf, size);
+  free(buf);
+  
+  if (httpCode > 0) {
+    Serial.printf("AWS upload code: %d\n", httpCode);
+  } else {
+    Serial.printf("AWS upload failed: %s\n", http.errorToString(httpCode).c_str());
+  }
+  
+  http.end();
+  return httpCode == 200;
+}
 void handleCapture() {
   // Back to the basics: take the picture
   uint8_t status = myCAM.takePicture(CAM_IMAGE_MODE_320X320, CAM_IMAGE_PIX_FMT_JPG);
@@ -58,6 +101,7 @@ void handleCapture() {
       }
       file.close();
       Serial.println("Saved: " + fileName);
+            uploadToAws(fileName);  // Upload to AWS S3
       server.send(200, "text/plain", "Success");
     } else {
       server.send(500, "text/plain", "SD Write Failed");
