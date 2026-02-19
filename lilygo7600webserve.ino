@@ -70,7 +70,10 @@ bool uploadToAws(String filePath) {
   HTTPClient http;
     WiFiClientSecure *client = new WiFiClientSecure;
   client->setInsecure();  // Skip certificate validation
+    client->setTimeout(15000); // 15 second timeout
+  Serial.println("Connecting to AWS Lambda...");
   http.begin(*client, AWS_API_URL);
+    http.setTimeout(15000); // 15 second timeout
   http.addHeader("Content-Type", "image/jpeg");
   
   int httpCode = http.POST(buf, size);
