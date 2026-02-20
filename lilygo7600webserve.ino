@@ -12,10 +12,11 @@ const int CAM_SCK = 18;
 const int CAM_MISO = 19;
 const int CAM_MOSI = 23;
 
+#define SD_CS   13
 #define SD_SCK  14
 #define SD_MISO 2
 #define SD_MOSI 15
-#define SD_CS   13
+
 
 const int POWER_PIN = 4;
 
@@ -137,8 +138,8 @@ void handleRoot() {
   html += ".del{background:#ef4444; color:white; border:none; padding:6px; width:100%; border-radius:6px; cursor:pointer; font-size:11px;}";
   html += "</style></head><body>";
 
-  html += "<h2>Aerio SD Gallery</h2>";
-  html += "<button class='btn' onclick=\"this.innerText='Capturing...'; fetch('/capture').then(()=>location.reload())\">📸 TAKE PHOTO</button>";
+  html += "<h2>Aerio's SD card Gallery</h2>";
+  html += "<button class='btn' onclick=\"this.innerText='Capturing...'; fetch('/capture').then(()=>location.reload())\">TAKE PHOTO</button>";
   html += "<div class='gallery'>";
 
   File root = SD.open("/");
