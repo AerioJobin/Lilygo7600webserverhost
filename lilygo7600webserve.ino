@@ -12,6 +12,7 @@ const int CAM_CS = 5;
 const int POWER_PIN = 4;
 
 Arducam_Mega myCAM(CAM_CS);
+
 const char* ssid = "AERIO4048";
 const char* password = "aerio12345678";
 const char* AWS_URL = "https://kloy7fchuw4li3dfjsd7joicga0fouov.lambda-url.ap-south-1.on.aws";
@@ -23,8 +24,9 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   
-  // Initialize SPI
-  SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, CAM_CS);
+  // Initialize SPI with explicit pins for LILYGO T-SIM7600
+  // CLK=18, MISO=17, MOSI=23 are standard ESP32 SPI pins
+  SPI.begin(18, 17, 23, CAM_CS);
   
   // Initialize Arducam
   myCAM.begin();
@@ -71,8 +73,10 @@ void loop() {
 
 void handleRoot() {
   String html = "<html><body><h1>Aerio Camera</h1>";
-  html += "<button onclick=\"fetch('/take_photo')\">Take Photo</button>";
-  html += "<button onclick=\"window.location='/gallery'\">View Gallery</button>";
+  html += "<button onclick=\"fetch('/take_photo')\">");
+  html += "Take Photo</button>";
+  html += "<button onclick=\"window.location='/gallery'\">");
+  html += "View Gallery</button>";
   html += "</body></html>";
   server.send(200, "text/html", html);
 }
@@ -111,6 +115,12 @@ void handleTakePhoto() {
 }
 
 void uploadToAWS(String path) {
+  // Check WiFi connectivity before attempting upload
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("ERROR: WiFi not connected! Cannot upload to AWS.");
+    return;
+  }
+  
   File f = SD.open(path, FILE_READ);
   if (!f) {
     Serial.println("Failed to open file for AWS upload");
@@ -126,19 +136,26 @@ void uploadToAWS(String path) {
     http.addHeader("Content-Type", "image/jpeg");
     
     // Use stream upload to save RAM
+    // For proper multipart upload, we send the file as POST body
     int code = http.sendRequest("POST", &f, f.size());
     
     if (code > 0) {
       Serial.printf("AWS upload code: %d\n", code);
       if (code == 200) {
         Serial.println("AWS upload successful!");
+      } else if (code == 502 || code == 503) {
+        Serial.println("AWS service error - check Lambda configuration and permissions");
       }
     } else {
       Serial.printf("Upload Error: %s\n", http.errorToString(code).c_str());
+      Serial.println("Check WiFi signal, Lambda URL, and network connectivity");
     }
     
     http.end();
+  } else {
+    Serial.println("Failed to establish HTTP connection to AWS");
   }
+  
   f.close();
 }
 
@@ -146,17 +163,18 @@ void handleGallery() {
   File root = SD.open("/");
   String html = "<html><head><meta charset=\"UTF-8\"></head><body>";
   html += "<h1>Aerio's SD card Gallery</h1>";
-  html += "<button onclick=\"fetch('/take_photo').then(() => location.reload())\">TAKE PHOTO</button>";
+  html += "<button onclick=\"fetch('/take_photo').then(() => location.reload())\">");
+  html += "TAKE PHOTO</button>";
   html += "<div style='display:grid; grid-template-columns: repeat(6, 1fr); gap: 10px;'>";
   
   File file = root.openNextFile();
   while (file) {
     if (!file.isDirectory() && String(file.name()).endsWith(".jpg")) {
       html += "<div style='border: 2px solid #333; padding: 5px;'>";
-      html += "<img src='/photo?file=" + String(file.name()) + "' style='width:100%; cursor:pointer;' onclick=\"alert('Photo: " + String(file.name()) + "')\">";
+      html += "<img src='/photo?file=" + String(file.name()) + "' style='width:100%; cursor:pointer;' onclick=\"alert('Photo: " + String(file.name()) + "')\"/?>";
       html += "<p>" + String(file.name()) + "</p>";
-      html += "<button onclick=\"fetch('/photo?file=" + String(file.name()) + "&delete=1').then(() => location.reload())\">Delete</button>";
-      html += "</div>";
+      html += "<button onclick=\"fetch('/photo?file=" + String(file.name()) + "&delete=1').then(() => location.reload())\">");
+      html += "Delete</button></div>";
     }
     file = root.openNextFile();
   }
