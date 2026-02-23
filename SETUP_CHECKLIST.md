@@ -71,6 +71,26 @@ If you see:
 
 ---
 
+
+## ☐ Step 6: Configure AWS Lambda Function
+
+The Lambda function acts as the "Brain" for your camera. It receives images from the ESP32 and uploads them to S3.
+
+1. ☐ Go to [AWS Lambda Console](https://console.aws.amazon.com/lambda)
+2. ☐ Create a Lambda function named `camera-upload-handler`
+3. ☐ Set Auth type to **NONE** (public access)
+4. ☐ Enable **CORS** with `Allow origin: *`
+5. ☐ Create/Attach IAM role with **S3FullAccess** policy
+6. ☐ Deploy the `lambda_function.py` code (see repo file)
+7. ☐ Copy your **Function URL** and update ESP32 code:
+   ```cpp
+   const char* AWS_URL = "https://your-lambda-url.aws/";
+   ```
+8. ☐ Deploy ESP32 code and test
+
+**Important:** Ensure the closing brace on line 24 of lambda_function.py is present - missing it causes 502 errors!
+
+
 ## Troubleshooting
 
 - **WiFi won't connect?** Check SSID and password spelling
